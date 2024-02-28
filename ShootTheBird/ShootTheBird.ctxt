@@ -1,0 +1,10 @@
+#BlueJ class context
+comment0.target=ShootTheBird
+comment0.text=\r\n\ Use\ JavaFX\ to\ create\ a\ streaming\ game\ that\ meets\ some\ particular\ \r\n\ requirements\ \r\n\ \r\n\ @author\ Nguyen\ Thanh\ Khoi\ Tran\r\n\ @author\ Sagar\ Kaithavayalil\ Jaison\r\n\ @date\ Feb\ 27,\ 2024\r\n\ @version\ proj_v02\ \r\n
+comment1.params=primaryStage
+comment1.target=void\ start(javafx.stage.Stage)
+comment2.params=event
+comment2.target=void\ handle(javafx.event.ActionEvent)
+comment3.params=
+comment3.target=javafx.scene.Scene\ playingGame()
+numComments=4
