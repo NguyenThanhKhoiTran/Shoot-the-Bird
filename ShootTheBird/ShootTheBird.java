@@ -5,9 +5,11 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 
 import javafx.scene.Scene;
+import javafx.scene.Group;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*; // * as I need to use some StackPane, BorderPane, etc.
@@ -22,6 +24,9 @@ import javafx.util.Duration;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 
+import java.util.Random;
+import java.util.ArrayList;
+
 /************************************************************************
  * Use JavaFX to create a streaming game that meets some particular 
  * requirements 
@@ -34,6 +39,12 @@ import javafx.animation.Timeline;
 public class ShootTheBird extends Application {
     // Instance data
     public static String name = "";
+    public static int vBucks = 0;
+    public static int number = 0;
+    public static int temp = 0;
+    
+    // Instantiate ArrayList to remove the number that appeared before
+    ArrayList <Integer> removeSameNum = new ArrayList <> ();
     
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -76,10 +87,13 @@ public class ShootTheBird extends Application {
 
         // Create TextField for player names
         TextField playerName = new TextField();
+        playerName.setPrefWidth(200);
+        playerName.setPrefHeight(50);
         
         // Clear the prompt text
         playerName.setPromptText(""); 
-
+        playerName.setStyle("-fx-text-fill: black; -fx-font-size: 30px; -fx-font-weight: bold;"); 
+        
         // Create Start button and place it in an HBox
         Button startButton = new Button("Start");
         
@@ -108,6 +122,7 @@ public class ShootTheBird extends Application {
          *************************************************************************/
         
         root.getChildren().add (opening);
+        
         // Avoid resizing the window
         primaryStage.setResizable(false);
         
@@ -157,19 +172,71 @@ public class ShootTheBird extends Application {
                 ImageView iv = new ImageView (bird);
                 iv.setFitWidth(115); 
                 iv.setFitHeight(115);
+                
                 gp.add(iv, c, r);
+                temp++;
             }
         }
         
+        // Create a "LEAVE" button and "ROLL" button
+        Button leave = new Button ("LEAVE");
+        Button roll = new Button ("ROLL");
+        leave.setStyle("-fx-background-color: green; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 20px; -fx-border-color: white; -fx-border-width: 5px;");
+        roll.setStyle("-fx-background-color: green; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 20px; -fx-border-color: white; -fx-border-width: 5px;");
+        
         // Create a rectangle and label to contain a random number
-        Rectangle rect = new Rectangle (115, 115);
-        rect.setFill (Color.GREEN);
-        rect.setStrokeWidth (5);
-        gp.add(rect, 3, 1);
+        TextArea square = new TextArea();
+        square.setPrefWidth(120);
+        square.setPrefHeight(115);
+        square.setText("NUMBER" + "\n>> " + number + " <<");
+        square.setStyle("-fx-control-inner-background: green; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 20px; -fx-alignment: center;"); 
+        square.setEditable (false);
+         
+        gp.add(square, 3, 1);
     
+        // Add function for ROLL button
+        roll.setOnAction (e -> generateRandomNumber (square));
+        
+        // Instantiate HBox
+        HBox hb = new HBox (100);
+        
+        // Create TextField for showing VBucks
+        TextField showVBucks = new TextField();
+        showVBucks.setPrefWidth(200);
+        showVBucks.setPrefHeight(50);
+        
+        // Set text and avoid editing for textfield
+        showVBucks.setText(vBucks + "VBucks"); 
+        showVBucks.setStyle("-fx-background-color: orange; -fx-text-fill: black; -fx-font-weight: bold; -fx-font-size: 20px; -fx-border-color: white; -fx-border-width: 5px;");        
+        showVBucks.setEditable (false);
+        
+        hb.getChildren().addAll (leave, roll, showVBucks);
+        hb.setAlignment (Pos.CENTER);
+        bp.setBottom (hb);
+                
         // Set GridPane at the center of BorderPane
         bp.setCenter (gp);
         
         return new Scene(bp, 1000, 800);
     }
+    
+    // Method for generate random number from 0 to 8
+    private void generateRandomNumber (TextArea ta)
+    {   
+        Random rd = new Random ();
+    
+        // If any number in ArrayList is the same as number generated recently, do again
+        do
+        {
+            number = rd.nextInt (8) + 1;
+        } while (removeSameNum.contains(number));
+        
+        removeSameNum.add(number);
+        ta.setText ("NUMBER" + "\n>> " + number + " <<");
+    }
+    
+    /******************************************************************************************************
+     * Make an exception if the same num is over 8 times, output the message that MUST LEAVE THE GAME
+     * Make an exception if player does not input anything, display the message to force user inputting 
+     ******************************************************************************************************/
 }

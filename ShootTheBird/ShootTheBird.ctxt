@@ -7,4 +7,6 @@ comment2.params=event
 comment2.target=void\ handle(javafx.event.ActionEvent)
 comment3.params=
 comment3.target=javafx.scene.Scene\ playingGame()
-numComments=4
+comment4.params=ta
+comment4.target=void\ generateRandomNumber(javafx.scene.control.TextArea)
+numComments=5
