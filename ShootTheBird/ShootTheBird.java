@@ -325,7 +325,6 @@ public class ShootTheBird extends Application {
         
         // Show the stage
         primaryStage.show();
-        primaryStage.setScene(new Scene(ending, 1000, 800));
         
         return new Scene(ending, 1000, 800);
     }
