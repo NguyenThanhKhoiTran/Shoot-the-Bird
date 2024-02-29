@@ -1,6 +1,6 @@
 #BlueJ class context
 comment0.target=ShootTheBird
-comment0.text=\r\n\ Use\ JavaFX\ to\ create\ a\ streaming\ game\ that\ meets\ some\ particular\ \r\n\ requirements\ \r\n\ \r\n\ @author\ Nguyen\ Thanh\ Khoi\ Tran\r\n\ @author\ Sagar\ Kaithavayalil\ Jaison\r\n\ @date\ Feb\ 27,\ 2024\r\n\ @version\ proj_v02\ \r\n
+comment0.text=\r\n\ Use\ JavaFX\ to\ create\ a\ streaming\ game\ that\ meets\ some\ particular\ \r\n\ requirements\ \r\n\ \r\n\ @author\ Nguyen\ Thanh\ Khoi\ Tran\r\n\ @author\ Sagar\ Kaithavayalil\ Jaison\r\n\ @date\ Feb\ 29,\ 2024\r\n\ @version\ proj_v04\ \r\n
 comment1.params=primaryStage
 comment1.target=void\ start(javafx.stage.Stage)
 comment10.params=primaryStage\ title\ message

@@ -34,8 +34,8 @@ import java.util.ArrayList;
  * 
  * @author Nguyen Thanh Khoi Tran
  * @author Sagar Kaithavayalil Jaison
- * @date Feb 27, 2024
- * @version proj_v02 
+ * @date Feb 29, 2024
+ * @version proj_v04 
  ************************************************************************/
 public class ShootTheBird extends Application {
     // Instance data

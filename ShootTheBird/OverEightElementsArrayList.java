@@ -4,7 +4,7 @@
  * 
  * @author Nguyen Thanh Khoi Tran
  * @author Sagar Kaithavayalil Jaison
- * @date Feb 27, 2024
+ * @date Feb 29, 2024
  * @version proj_v01 
  ************************************************************************/
 public class OverEightElementsArrayList extends Exception
