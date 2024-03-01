@@ -27,6 +27,7 @@ import javafx.animation.Timeline;
 
 import java.util.Random;
 import java.util.ArrayList;
+import java.io.File;
 
 /************************************************************************
  * Use JavaFX to create a streaming game that meets some particular 
@@ -45,11 +46,53 @@ public class ShootTheBird extends Application {
     public static int temp = 0;
     public static int click = 0;
     
+    private String [] fileNames;
+    private ArrayList <Image> images;
+    private int currentIndex = 1;
+    
     // Instantiate ArrayList to remove the number that appeared before
     ArrayList <Integer> removeSameNum = new ArrayList <> ();
     
+    // Instantiate ArrayList for ImageView
+    ArrayList <ImageView> iv = new ArrayList <> ();
+    
+    @Override 
+    public void init () throws Exception
+    {
+        // Specify the path to the folder containing images
+        String folderPath = "Bird+Num";
+        
+        // Create a File object representing the folder
+        File folder = new File (folderPath);
+        
+        // Instatiate an ArrayList to store Image objects
+        images = new ArrayList <> ();
+        
+        // Check if the specified path exists and is a directory
+        // Get the list of files in the folder
+        File [] files = folder.listFiles();
+        fileNames = new String [files.length];
+        
+        // Iterate over the files and store their names in the array
+        for (int i = 0; i < files.length; i++)
+        {
+            fileNames [i] = files[i].getName();
+        }
+        
+        // Load the images found in the folder
+        for (File file : files) 
+        {
+            if (file.isFile() && isImageFile(file.getName())) 
+            {
+                Image image = new Image(file.toURI().toString());
+                images.add(image);
+            }
+        }
+    }
+    
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage primaryStage) throws Exception 
+    {
         /*********************************************************************
          * FIRST PANE: OPENING
          *********************************************************************/
@@ -177,17 +220,23 @@ public class ShootTheBird extends Application {
         gp.setHgap(90); 
         gp.setVgap(90); 
         
-        // Put 8 birds in 8 position
+        /****************************************
+         * Put 8 birds in 8 position
+         ****************************************/ 
+        
         for (int c = 2; c < 5; c++)
         {
             for (int r = 0; r < 3; r++)
             {
-                Image bird = new Image ("Bird.png");
-                ImageView iv = new ImageView (bird);
-                iv.setFitWidth(115); 
-                iv.setFitHeight(115);
+                Image bird = images.get(temp);
+                ImageView temp2 = new ImageView (bird);
+                iv.add (temp2); 
                 
-                gp.add(iv, c, r);
+                temp2.setFitWidth(115); 
+                temp2.setFitHeight(115);
+                
+                // Add it into GridPane
+                gp.add(temp2, c, r);
                 temp++;
             }
         }
@@ -217,6 +266,21 @@ public class ShootTheBird extends Application {
                 try
                 {
                     generateRandomNumber (square);
+                    
+                    // Using switch-case to remove a bird that has the same number of random generator given
+                    switch (number)
+                    {
+                        case 1 -> gp.getChildren().remove(iv.get(0));
+                        case 2 -> gp.getChildren().remove(iv.get(1));
+                        case 3 -> gp.getChildren().remove(iv.get(2));
+                        case 4 -> gp.getChildren().remove(iv.get(3));
+                        case 5 -> gp.getChildren().remove(iv.get(5));
+                        case 6 -> gp.getChildren().remove(iv.get(6));
+                        case 7 -> gp.getChildren().remove(iv.get(7));
+                        case 8 -> gp.getChildren().remove(iv.get(8));
+                        default -> throw new OverEightElementsArrayList ();
+                    }
+                    
                 }
                 catch (OverEightElementsArrayList oeeal)
                 {
@@ -269,6 +333,10 @@ public class ShootTheBird extends Application {
         /*************************************************************************
          * THIRD PANE: REWARDING 
          *************************************************************************/
+        // Create HBox to set 2 button next to each other
+        HBox hb = new HBox (30);
+        hb.setAlignment(Pos.CENTER); 
+         
         // Create VBox and align at the center 
         VBox ending = new VBox();
         ending.setPadding(new Insets(20));
@@ -319,9 +387,18 @@ public class ShootTheBird extends Application {
                 }
             }
         });
-
+        
+        // Create close button
+        Button closeButton = new Button("Close");
+        closeButton.setStyle("-fx-background-color: green; -fx-text-fill: white;");
+        closeButton.setFont(Font.font("Arial", 30));  // Increase the font size
+        closeButton.setOnAction(e -> primaryStage.close());
+        
+        // Add button to HBox
+        hb.getChildren().addAll (closeButton, resetButton);
+        
         // Add labels and button to VBox
-        ending.getChildren().addAll(playerNameLabel, rewardLabel, resetButton);
+        ending.getChildren().addAll(playerNameLabel, rewardLabel, hb);
         
         // Show the stage
         primaryStage.show();
@@ -447,5 +524,16 @@ public class ShootTheBird extends Application {
         timeline.play();
 
         return label;
+    }
+    
+    /******************************************************
+     * Make a method to identify the ending of file name
+     ******************************************************/
+    private boolean isImageFile(String fileName) 
+    {
+        return fileName.toLowerCase().endsWith(".png") ||
+               fileName.toLowerCase().endsWith(".jpg") ||
+               fileName.toLowerCase().endsWith(".jpeg") ||
+               fileName.toLowerCase().endsWith(".gif");
     }
 }

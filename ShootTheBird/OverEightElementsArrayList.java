@@ -13,4 +13,9 @@ public class OverEightElementsArrayList extends Exception
     {
         super (message);
     }
+    
+    public OverEightElementsArrayList ()
+    {
+        super ("Ohhhh.... There are no birds now, PLEASE click \" LEAVE \" button below to receive reward");
+    }
 }
