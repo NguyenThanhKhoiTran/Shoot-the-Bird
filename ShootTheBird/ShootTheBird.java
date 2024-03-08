@@ -5,6 +5,9 @@ import javafx.stage.Modality;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+import javafx.scene.media.AudioClip;
 import javafx.scene.Scene;
 import javafx.scene.Group;
 import javafx.scene.control.Button;
@@ -38,14 +41,16 @@ import java.io.File;
  * @date Feb 29, 2024
  * @version proj_v04 
  ************************************************************************/
-public class ShootTheBird extends Application {
+public class ShootTheBird extends Application 
+{
     // Instance data
     public static String name = "";
     public static int vBucks = 0;
     public static int number = 0;
     public static int temp = 0;
     public static int click = 0;
-    
+    private MediaPlayer rollSound;
+    private MediaPlayer rewardSound;
     private String [] fileNames;
     private ArrayList <Image> images;
     private int currentIndex = 1;
@@ -73,6 +78,14 @@ public class ShootTheBird extends Application {
         File [] files = folder.listFiles();
         fileNames = new String [files.length];
         
+        // Load the opening sound file
+        String openingSoundFilePath = "openingsound.MP3"; 
+        Media openingMedia = new Media(new File(openingSoundFilePath).toURI().toString());
+        MediaPlayer openingSound = new MediaPlayer(openingMedia);
+
+        // Play the opening sound
+        openingSound.play();
+        
         // Iterate over the files and store their names in the array
         for (int i = 0; i < files.length; i++)
         {
@@ -88,6 +101,16 @@ public class ShootTheBird extends Application {
                 images.add(image);
             }
         }
+        
+        // Load sound file
+        String soundFilePath = "diceroll.MP3"; // Replace with the actual path
+        Media rollMedia = new Media(new File(soundFilePath).toURI().toString());
+        rollSound = new MediaPlayer(rollMedia);
+        
+        String rewardSoundFilePath = "rewardsound.MP3"; // Replace with the actual path
+        Media rewardMedia = new Media(new File(rewardSoundFilePath).toURI().toString());
+        rewardSound = new MediaPlayer(rewardMedia);
+
     }
     
     @Override
@@ -150,32 +173,33 @@ public class ShootTheBird extends Application {
         
         // Add components to VBox
         opening.getChildren().addAll(title, instructionLabel, playerName, startButton);
-
+        
         // Put the name into provided variable when the button is clicked
-        startButton.setOnAction(new EventHandler <ActionEvent> ()
+        startButton.setOnAction(new EventHandler<ActionEvent>() 
         {
             @Override
-            public void handle (ActionEvent event)
+            public void handle(ActionEvent event) 
             {
-                try
+                try 
                 {
                     name = playerName.getText();
-                    if (name.isEmpty())
+                    if (name.isEmpty()) 
                     {
-                        throw new NoNameInputException ("Wait !!!! Do you have any name? If does, please type it into this beautiful field, PLEASE!");
-                    }
-                    else
+                        throw new NoNameInputException("Wait !!!! Do you have any name? If does, please type it into this beautiful field, PLEASE!");
+                    } 
+                    else 
                     {
-                        primaryStage.setScene (playingGame(primaryStage));
+                        primaryStage.setScene(playingGame(primaryStage));
                     }
-                }
-                catch (NoNameInputException nnie)
+                } 
+                catch (NoNameInputException nnie) 
                 {
+                    playErrorSound();
                     showNameAlert(" >>> ERROR <<<", nnie.getMessage());
                 }
             }
         });
-
+    
         root.getChildren().add (opening);
         
         // Avoid resizing the window
@@ -263,24 +287,53 @@ public class ShootTheBird extends Application {
             @Override
             public void handle (ActionEvent event)
             {
-                try
+                try 
                 {
-                    generateRandomNumber (square);
-                    
-                    // Using switch-case to remove a bird that has the same number of random generator given
-                    switch (number)
+                    generateRandomNumber(square);
+        
+                    // Play the roll sound
+                    rollSound.stop(); 
+                    rollSound.setOnEndOfMedia(new Runnable() 
                     {
-                        case 1 -> gp.getChildren().remove(iv.get(0));
-                        case 2 -> gp.getChildren().remove(iv.get(1));
-                        case 3 -> gp.getChildren().remove(iv.get(2));
-                        case 4 -> gp.getChildren().remove(iv.get(3));
-                        case 5 -> gp.getChildren().remove(iv.get(5));
-                        case 6 -> gp.getChildren().remove(iv.get(6));
-                        case 7 -> gp.getChildren().remove(iv.get(7));
-                        case 8 -> gp.getChildren().remove(iv.get(8));
-                        default -> throw new OverEightElementsArrayList ();
-                    }
-                    
+                        @Override
+                        public void run() 
+                        {
+                            // Play the birdshoot sound after the roll sound finishes
+                            playBirdShootSound();
+                        }
+                    });
+                    rollSound.play();
+
+                    // Using switch-case to remove a bird that has the same number of random generator given
+                    switch (number) 
+                    {
+                        case 1:
+                            gp.getChildren().remove(iv.get(0));
+                            break;
+                        case 2:
+                            gp.getChildren().remove(iv.get(1));
+                            break;
+                        case 3:
+                            gp.getChildren().remove(iv.get(2));
+                            break;
+                        case 4:
+                            gp.getChildren().remove(iv.get(3));
+                            break;
+                        case 5:
+                            gp.getChildren().remove(iv.get(5));
+                            break;
+                        case 6:
+                            gp.getChildren().remove(iv.get(6));
+                            break;
+                        case 7:
+                            gp.getChildren().remove(iv.get(7));
+                            break;
+                        case 8:
+                            gp.getChildren().remove(iv.get(8));
+                            break;
+                        default:
+                            throw new OverEightElementsArrayList();
+                    }      
                 }
                 catch (OverEightElementsArrayList oeeal)
                 {
@@ -295,6 +348,9 @@ public class ShootTheBird extends Application {
             @Override
             public void handle (ActionEvent event)
             {
+                // Stop previous plays
+                rewardSound.stop(); 
+                rewardSound.play();
                 primaryStage.setScene (rewardScene(primaryStage));
             }
         });
@@ -360,7 +416,7 @@ public class ShootTheBird extends Application {
         // Create reset button
         Button resetButton = new Button("Reset");
         resetButton.setStyle("-fx-background-color: green; -fx-text-fill: white;");
-        resetButton.setFont(Font.font("Arial", 30));  // Increase the font size
+        resetButton.setFont(Font.font("Arial", 30));  
         
         resetButton.setOnAction(new EventHandler <ActionEvent> () 
         {
@@ -415,7 +471,7 @@ public class ShootTheBird extends Application {
         
         if (removeSameNum.size() >= 8)
         {
-            throw new OverEightElementsArrayList ("Ohhhh.... There are no birds now, PLEASE click \" LEAVE \" button below to receive reward");
+            throw new OverEightElementsArrayList ();
         }
         else
         {
@@ -473,6 +529,10 @@ public class ShootTheBird extends Application {
             @Override
             public void handle (ActionEvent event)
             {
+                // Stop previous plays
+                rewardSound.stop(); 
+                rewardSound.play();
+                
                 alertStage.close();
                 primaryStage.setScene (rewardScene(primaryStage));
             }
@@ -536,4 +596,31 @@ public class ShootTheBird extends Application {
                fileName.toLowerCase().endsWith(".jpeg") ||
                fileName.toLowerCase().endsWith(".gif");
     }
+    
+    /*******************************************************
+     * Method to play the birdshoot sound
+     *******************************************************/ 
+    private void playBirdShootSound() 
+    {
+        // Load the birdshoot sound file
+        String birdShootSoundFilePath = "birdshoot.MP3"; 
+        Media birdShootMedia = new Media(new File(birdShootSoundFilePath).toURI().toString());
+        MediaPlayer birdShootPlayer = new MediaPlayer(birdShootMedia);
+    
+        // Play the birdshoot sound
+        birdShootPlayer.play();
+    }
+    
+    /******************************************************
+     * Method to play the error sound
+     *******************************************************/
+    
+    private void playErrorSound() {
+        // Load error sound file
+        String errorSoundFilePath = "errorsound.MP3"; 
+        Media errorMedia = new Media(new File(errorSoundFilePath).toURI().toString());
+        MediaPlayer errorSound = new MediaPlayer(errorMedia);
+        errorSound.play();
+    }
+    
 }
