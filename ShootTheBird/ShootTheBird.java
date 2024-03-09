@@ -30,6 +30,7 @@ import javafx.animation.Timeline;
 
 import java.util.Random;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.io.File;
 
 /************************************************************************
@@ -48,35 +49,57 @@ public class ShootTheBird extends Application
     public static int vBucks = 0;
     public static int number = 0;
     public static int temp = 0;
-    public static int click = 0;
+    public static int VBtemp = 0;
+    public static int ranNum;
     private MediaPlayer rollSound;
     private MediaPlayer rewardSound;
+    public static int appear500 = 1;
+    public static int appear50 = 1;
+    public static int appearMinus500 = 1;
+    
+    // For bird
     private String [] fileNames;
     private ArrayList <Image> images;
-    private int currentIndex = 1;
     
-    // Instantiate ArrayList to remove the number that appeared before
+    // For VBucks
+    private String [] fileNames2;
+    private ArrayList <Image> images2;
+    
+    
+    // Instantiate ArrayList to remove the number that appeared before (in bird)
     ArrayList <Integer> removeSameNum = new ArrayList <> ();
+    
+    // Instantiate ArrayList to remove the number that appeared before (in VBucks)
+    ArrayList <Integer> sameNum = new ArrayList <> ();
     
     // Instantiate ArrayList for ImageView
     ArrayList <ImageView> iv = new ArrayList <> ();
+    
+    // Instantiate ArrayList for ImageView (VBucks)
+    ArrayList <ImageView> iv2 = new ArrayList <> ();
     
     @Override 
     public void init () throws Exception
     {
         // Specify the path to the folder containing images
         String folderPath = "Bird+Num";
+        String folderPath2 = "VBucks";
         
         // Create a File object representing the folder
         File folder = new File (folderPath);
+        File folder2 = new File (folderPath2);
         
         // Instatiate an ArrayList to store Image objects
         images = new ArrayList <> ();
+        images2 = new ArrayList <> ();
         
         // Check if the specified path exists and is a directory
         // Get the list of files in the folder
         File [] files = folder.listFiles();
         fileNames = new String [files.length];
+        
+        File [] files2 = folder2.listFiles();
+        fileNames2 = new String [files2.length];
         
         // Load the opening sound file
         String openingSoundFilePath = "openingsound.MP3"; 
@@ -92,6 +115,12 @@ public class ShootTheBird extends Application
             fileNames [i] = files[i].getName();
         }
         
+        // Iterate over the files and store their names in the array
+        for (int i = 0; i < files2.length; i++)
+        {
+            fileNames2 [i] = files2[i].getName();
+        }
+        
         // Load the images found in the folder
         for (File file : files) 
         {
@@ -99,6 +128,16 @@ public class ShootTheBird extends Application
             {
                 Image image = new Image(file.toURI().toString());
                 images.add(image);
+            }
+        }
+        
+        // Load the images found in the folder
+        for (File file2 : files2) 
+        {
+            if (file2.isFile() && isImageFile(file2.getName())) 
+            {
+                Image image2 = new Image(file2.toURI().toString());
+                images2.add(image2);
             }
         }
         
@@ -110,7 +149,6 @@ public class ShootTheBird extends Application
         String rewardSoundFilePath = "rewardsound.MP3"; // Replace with the actual path
         Media rewardMedia = new Media(new File(rewardSoundFilePath).toURI().toString());
         rewardSound = new MediaPlayer(rewardMedia);
-
     }
     
     @Override
@@ -244,6 +282,16 @@ public class ShootTheBird extends Application
         gp.setHgap(90); 
         gp.setVgap(90); 
         
+        // VBucks picture after bird disappears
+        for (int i = 0; i < 8; i++)
+        {
+            Image vbucks = images2.get(i);
+            ImageView tempVB2 = new ImageView (vbucks);
+            tempVB2.setFitWidth(115);
+            tempVB2.setFitHeight(115);
+            iv2.add (tempVB2);
+        }
+        
         /****************************************
          * Put 8 birds in 8 position
          ****************************************/ 
@@ -278,9 +326,26 @@ public class ShootTheBird extends Application
         square.setText("NUMBER" + "\n>> " + number + " <<");
         square.setStyle("-fx-control-inner-background: green; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 20px; -fx-alignment: center;"); 
         square.setEditable (false);
-         
+        
         gp.add(square, 3, 1);
-    
+        
+        // Instantiate HBox
+        HBox hb = new HBox (100);
+        
+        // Create TextField for showing VBucks
+        TextField showVBucks = new TextField();
+        showVBucks.setPrefWidth(200);
+        showVBucks.setPrefHeight(50);
+        
+        // Set text and avoid editing for textfield
+        showVBucks.setText(vBucks + "VBucks"); 
+        showVBucks.setStyle("-fx-background-color: orange; -fx-text-fill: black; -fx-font-weight: bold; -fx-font-size: 20px; -fx-border-color: white; -fx-border-width: 5px;");        
+        showVBucks.setEditable (false);
+        
+        hb.getChildren().addAll (leave, roll, showVBucks);
+        hb.setAlignment (Pos.CENTER);
+        bp.setBottom (hb);
+        
         // Add function for ROLL button
         roll.setOnAction(new EventHandler <ActionEvent> ()
         {
@@ -290,7 +355,7 @@ public class ShootTheBird extends Application
                 try 
                 {
                     generateRandomNumber(square);
-        
+                    
                     // Play the roll sound
                     rollSound.stop(); 
                     rollSound.setOnEndOfMedia(new Runnable() 
@@ -303,33 +368,48 @@ public class ShootTheBird extends Application
                         }
                     });
                     rollSound.play();
-
                     // Using switch-case to remove a bird that has the same number of random generator given
                     switch (number) 
                     {
                         case 1:
                             gp.getChildren().remove(iv.get(0));
+                            gp.add(vBucksPic(iv2), 2, 0);
+                            showVBucks.setText(vBucks + "VBucks");
                             break;
                         case 2:
                             gp.getChildren().remove(iv.get(1));
+                            gp.add(vBucksPic(iv2), 2, 1);
+                            showVBucks.setText(vBucks + "VBucks");
                             break;
                         case 3:
                             gp.getChildren().remove(iv.get(2));
+                            gp.add(vBucksPic(iv2), 2, 2);
+                            showVBucks.setText(vBucks + "VBucks");
                             break;
                         case 4:
                             gp.getChildren().remove(iv.get(3));
+                            gp.add(vBucksPic(iv2), 3, 0);
+                            showVBucks.setText(vBucks + "VBucks");
                             break;
                         case 5:
                             gp.getChildren().remove(iv.get(5));
+                            gp.add(vBucksPic(iv2), 3, 2);
+                            showVBucks.setText(vBucks + "VBucks");
                             break;
                         case 6:
                             gp.getChildren().remove(iv.get(6));
+                            gp.add(vBucksPic(iv2), 4, 0);
+                            showVBucks.setText(vBucks + "VBucks");
                             break;
                         case 7:
                             gp.getChildren().remove(iv.get(7));
+                            gp.add(vBucksPic(iv2), 4, 1);
+                            showVBucks.setText(vBucks + "VBucks");
                             break;
                         case 8:
                             gp.getChildren().remove(iv.get(8));
+                            gp.add(vBucksPic(iv2), 4, 2);
+                            showVBucks.setText(vBucks + "VBucks");
                             break;
                         default:
                             throw new OverEightElementsArrayList();
@@ -355,23 +435,6 @@ public class ShootTheBird extends Application
             }
         });
         
-        // Instantiate HBox
-        HBox hb = new HBox (100);
-        
-        // Create TextField for showing VBucks
-        TextField showVBucks = new TextField();
-        showVBucks.setPrefWidth(200);
-        showVBucks.setPrefHeight(50);
-        
-        // Set text and avoid editing for textfield
-        showVBucks.setText(vBucks + "VBucks"); 
-        showVBucks.setStyle("-fx-background-color: orange; -fx-text-fill: black; -fx-font-weight: bold; -fx-font-size: 20px; -fx-border-color: white; -fx-border-width: 5px;");        
-        showVBucks.setEditable (false);
-        
-        hb.getChildren().addAll (leave, roll, showVBucks);
-        hb.setAlignment (Pos.CENTER);
-        bp.setBottom (hb);
-                
         // Set GridPane at the center of BorderPane
         bp.setCenter (gp);
 
@@ -411,6 +474,10 @@ public class ShootTheBird extends Application
         Label playerNameLabel = createLabel("Player's Name: " + name, Color.BLACK);  
         
         // Red color for the blinking reward text
+        if (vBucks < 0)
+        {
+            vBucks = 0;
+        }
         Label rewardLabel = createBlinkingLabel("Reward in the Game ==> " + vBucks, Color.RED);  
 
         // Create reset button
@@ -427,6 +494,10 @@ public class ShootTheBird extends Application
                 vBucks = 0;
                 number = 0;
                 temp = 0;
+                VBtemp = 0;
+                appear500 = 1;
+                appear50 = 1;
+                appearMinus500 = 1;
                 removeSameNum.clear();
                 primaryStage.close();
                 
@@ -572,13 +643,13 @@ public class ShootTheBird extends Application
             new KeyFrame(Duration.seconds(0.5), e -> 
             {
                 if (label.getTextFill() == textColor) 
-                    {
-                        label.setTextFill(Color.TRANSPARENT);
-                    } 
-                    else 
-                    {
-                        label.setTextFill(textColor);
-                    }
+                {
+                    label.setTextFill(Color.TRANSPARENT);
+                } 
+                else 
+                {
+                    label.setTextFill(textColor);
+                }
             }));
         timeline.setCycleCount(timeline.INDEFINITE);
         timeline.play();
@@ -623,4 +694,34 @@ public class ShootTheBird extends Application
         errorSound.play();
     }
     
+    /******************************************************
+     * Method to random add a VBucks picture
+     ******************************************************/
+    private ImageView vBucksPic (ArrayList <ImageView> vb) 
+    {
+        Random rand = new Random ();
+        
+        // Ensure that every number is distinct
+        do
+        {
+            ranNum = rand.nextInt (8);
+        } while (sameNum.contains(ranNum));
+        sameNum.add(ranNum);
+        
+        // Add into VBuck prize
+        switch (ranNum)
+        {
+            case 0 -> vBucks += 50;
+            case 1 -> vBucks += 100;
+            case 2 -> vBucks += 500;
+            case 3 -> vBucks += 800;
+            case 4 -> vBucks -= 500;
+            case 5 -> vBucks -= 800;
+            case 6 -> vBucks += 500;
+            case 7 -> vBucks -= 500;
+            default -> vBucks += 0;
+        }
+        
+        return vb.get(ranNum);
+    }
 }
