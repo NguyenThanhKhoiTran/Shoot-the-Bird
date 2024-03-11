@@ -39,8 +39,8 @@ import java.io.File;
  * 
  * @author Nguyen Thanh Khoi Tran
  * @author Sagar Kaithavayalil Jaison
- * @date Feb 29, 2024
- * @version proj_v04 
+ * @date Mar 08th, 2024 
+ * @version proj_v2 
  ************************************************************************/
 public class ShootTheBird extends Application 
 {
