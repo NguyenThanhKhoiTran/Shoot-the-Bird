@@ -1,7 +1,6 @@
 import javafx.application.Application;
 import javafx.stage.Stage;
 import javafx.stage.Modality;
-
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 
@@ -16,7 +15,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.*; // * as I need to use some StackPane, BorderPane, etc.
+import javafx.scene.layout.*; 
 import javafx.scene.text.Font;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.paint.Color;
@@ -31,7 +30,7 @@ import javafx.animation.Timeline;
 import java.util.Random;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.io.File;
+import java.io.*;
 
 /************************************************************************
  * Use JavaFX to create a streaming game that meets some particular 
@@ -39,23 +38,22 @@ import java.io.File;
  * 
  * @author Nguyen Thanh Khoi Tran
  * @author Sagar Kaithavayalil Jaison
- * @date Mar 08th, 2024 
- * @version proj_v2 
+ * @date March 21st, 2024
+ * @version proj_v10 
  ************************************************************************/
 public class ShootTheBird extends Application 
 {
     // Instance data
+    private MediaPlayer rollSound;
+    private MediaPlayer rewardSound;
     public static String name = "";
     public static int vBucks = 0;
     public static int number = 0;
     public static int temp = 0;
     public static int VBtemp = 0;
     public static int ranNum;
-    private MediaPlayer rollSound;
-    private MediaPlayer rewardSound;
-    public static int appear500 = 1;
-    public static int appear50 = 1;
-    public static int appearMinus500 = 1;
+    public static int shieldUsing = 0;
+    public static int addVB = 0;
     
     // For bird
     private String [] fileNames;
@@ -64,8 +62,7 @@ public class ShootTheBird extends Application
     // For VBucks
     private String [] fileNames2;
     private ArrayList <Image> images2;
-    
-    
+
     // Instantiate ArrayList to remove the number that appeared before (in bird)
     ArrayList <Integer> removeSameNum = new ArrayList <> ();
     
@@ -133,7 +130,7 @@ public class ShootTheBird extends Application
         
         // Load the images found in the folder
         for (File file2 : files2) 
-        {
+        {   
             if (file2.isFile() && isImageFile(file2.getName())) 
             {
                 Image image2 = new Image(file2.toURI().toString());
@@ -142,11 +139,11 @@ public class ShootTheBird extends Application
         }
         
         // Load sound file
-        String soundFilePath = "diceroll.MP3"; // Replace with the actual path
+        String soundFilePath = "diceroll.WAV"; 
         Media rollMedia = new Media(new File(soundFilePath).toURI().toString());
         rollSound = new MediaPlayer(rollMedia);
         
-        String rewardSoundFilePath = "rewardsound.MP3"; // Replace with the actual path
+        String rewardSoundFilePath = "rewardsound.MP3"; 
         Media rewardMedia = new Media(new File(rewardSoundFilePath).toURI().toString());
         rewardSound = new MediaPlayer(rewardMedia);
     }
@@ -168,7 +165,7 @@ public class ShootTheBird extends Application
         Timeline tl = new Timeline(
                 new KeyFrame(Duration.seconds(0.5), e -> title.setVisible(true)),
                 new KeyFrame(Duration.seconds(1), e -> title.setVisible(false))
-        );
+                );
         tl.setCycleCount(tl.INDEFINITE);
         tl.play();
          
@@ -283,7 +280,7 @@ public class ShootTheBird extends Application
         gp.setVgap(90); 
         
         // VBucks picture after bird disappears
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < 16; i++)
         {
             Image vbucks = images2.get(i);
             ImageView tempVB2 = new ImageView (vbucks);
@@ -342,7 +339,29 @@ public class ShootTheBird extends Application
         showVBucks.setStyle("-fx-background-color: orange; -fx-text-fill: black; -fx-font-weight: bold; -fx-font-size: 20px; -fx-border-color: white; -fx-border-width: 5px;");        
         showVBucks.setEditable (false);
         
-        hb.getChildren().addAll (leave, roll, showVBucks);
+        /***********************************************************
+         * Create a button to activate special ability (avoid shield)
+         * 
+         * This ability just use ONCE only in the game, help player
+         * avoid being deducted from VB when deducting picture is 
+         * reveal; and there is nothing happen if getting picture
+         * is shown
+         ***********************************************************/
+        Button shield = new Button ("SHIELD");
+        shield.setStyle("-fx-background-color: purple; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 20px; -fx-border-color: white; -fx-border-width: 5px;");
+        // Add functionality for "SHIELD" button
+        shield.setOnAction (new EventHandler <ActionEvent> ()
+        {
+            @Override
+            public void handle (ActionEvent event)
+            {
+                shield.setVisible(false);
+                shieldUsing++;
+            }
+        });
+        
+        // Add all components into declared HBox
+        hb.getChildren().addAll (leave, roll, shield, showVBucks);
         hb.setAlignment (Pos.CENTER);
         bp.setBottom (hb);
         
@@ -358,62 +377,54 @@ public class ShootTheBird extends Application
                     
                     // Play the roll sound
                     rollSound.stop(); 
-                    rollSound.setOnEndOfMedia(new Runnable() 
-                    {
-                        @Override
-                        public void run() 
-                        {
-                            // Play the birdshoot sound after the roll sound finishes
-                            playBirdShootSound();
-                        }
-                    });
                     rollSound.play();
+                    
                     // Using switch-case to remove a bird that has the same number of random generator given
                     switch (number) 
                     {
                         case 1:
                             gp.getChildren().remove(iv.get(0));
-                            gp.add(vBucksPic(iv2), 2, 0);
-                            showVBucks.setText(vBucks + "VBucks");
+                            gp.add(calcVBuck(iv2), 2, 0);
+                            showVBucks.setText(vBucks + "VBucks" + ranNum++);
                             break;
                         case 2:
                             gp.getChildren().remove(iv.get(1));
-                            gp.add(vBucksPic(iv2), 2, 1);
+                            gp.add(calcVBuck(iv2), 2, 1);
                             showVBucks.setText(vBucks + "VBucks");
                             break;
                         case 3:
                             gp.getChildren().remove(iv.get(2));
-                            gp.add(vBucksPic(iv2), 2, 2);
+                            gp.add(calcVBuck(iv2), 2, 2);
                             showVBucks.setText(vBucks + "VBucks");
                             break;
                         case 4:
                             gp.getChildren().remove(iv.get(3));
-                            gp.add(vBucksPic(iv2), 3, 0);
+                            gp.add(calcVBuck(iv2), 3, 0);
                             showVBucks.setText(vBucks + "VBucks");
                             break;
                         case 5:
                             gp.getChildren().remove(iv.get(5));
-                            gp.add(vBucksPic(iv2), 3, 2);
+                            gp.add(calcVBuck(iv2), 3, 2);
                             showVBucks.setText(vBucks + "VBucks");
                             break;
                         case 6:
                             gp.getChildren().remove(iv.get(6));
-                            gp.add(vBucksPic(iv2), 4, 0);
+                            gp.add(calcVBuck(iv2), 4, 0);
                             showVBucks.setText(vBucks + "VBucks");
                             break;
                         case 7:
                             gp.getChildren().remove(iv.get(7));
-                            gp.add(vBucksPic(iv2), 4, 1);
+                            gp.add(calcVBuck(iv2), 4, 1);
                             showVBucks.setText(vBucks + "VBucks");
                             break;
                         case 8:
                             gp.getChildren().remove(iv.get(8));
-                            gp.add(vBucksPic(iv2), 4, 2);
+                            gp.add(calcVBuck(iv2), 4, 2);
                             showVBucks.setText(vBucks + "VBucks");
                             break;
                         default:
                             throw new OverEightElementsArrayList();
-                    }      
+                    }
                 }
                 catch (OverEightElementsArrayList oeeal)
                 {
@@ -495,9 +506,8 @@ public class ShootTheBird extends Application
                 number = 0;
                 temp = 0;
                 VBtemp = 0;
-                appear500 = 1;
-                appear50 = 1;
-                appearMinus500 = 1;
+                shieldUsing = 0;
+                addVB = 0;
                 removeSameNum.clear();
                 primaryStage.close();
                 
@@ -639,8 +649,7 @@ public class ShootTheBird extends Application
         Label label = createLabel(text, textColor);
 
         // Create a blinking effect using Timeline
-        Timeline timeline = new Timeline(
-            new KeyFrame(Duration.seconds(0.5), e -> 
+        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(0.5), e -> 
             {
                 if (label.getTextFill() == textColor) 
                 {
@@ -694,34 +703,142 @@ public class ShootTheBird extends Application
         errorSound.play();
     }
     
+    
+    // Method to play the level up sound after the roll sound finishes
+    private void playLevelUpSound() {
+        // Load level up sound file
+        String levelUpSoundFilePath = "levelup.WAV"; 
+        Media levelUpMedia = new Media(new File(levelUpSoundFilePath).toURI().toString());
+        MediaPlayer levelUpSound = new MediaPlayer(levelUpMedia);
+    
+        // Add event handler to play level up sound after roll sound finishes
+        rollSound.setOnEndOfMedia(() -> {levelUpSound.play();});
+    
+        // Play the roll sound
+        rollSound.play();
+    }
+
+    // Method to play the level down sound after the roll sound finishes
+    private void playLevelDownSound() {
+        // Load level down sound file
+        String levelDownSoundFilePath = "leveldown.WAV"; 
+        Media levelDownMedia = new Media(new File(levelDownSoundFilePath).toURI().toString());
+        MediaPlayer levelDownSound = new MediaPlayer(levelDownMedia);
+    
+        // Add event handler to play level down sound after roll sound finishes
+        rollSound.setOnEndOfMedia(() -> {levelDownSound.play();});
+    
+        // Play the roll sound
+        rollSound.play();
+    }   
+
     /******************************************************
      * Method to random add a VBucks picture
      ******************************************************/
-    private ImageView vBucksPic (ArrayList <ImageView> vb) 
+    private ImageView calcVBuck(ArrayList<ImageView> vb) 
     {
-        Random rand = new Random ();
+        Random rand = new Random();
         
         // Ensure that every number is distinct
-        do
+        do 
         {
-            ranNum = rand.nextInt (8);
+            ranNum = rand.nextInt(16); 
         } while (sameNum.contains(ranNum));
         sameNum.add(ranNum);
         
+        final int generateNum = ranNum;
         // Add into VBuck prize
-        switch (ranNum)
+        switch (generateNum) 
         {
-            case 0 -> vBucks += 50;
-            case 1 -> vBucks += 100;
-            case 2 -> vBucks += 500;
-            case 3 -> vBucks += 800;
-            case 4 -> vBucks -= 500;
-            case 5 -> vBucks -= 800;
-            case 6 -> vBucks += 500;
-            case 7 -> vBucks -= 500;
-            default -> vBucks += 0;
+            case 0:
+                addVB = 50;
+                vBucks += addVB;
+                break;
+            case 1:
+                addVB = 50;
+                vBucks += addVB;
+                break;
+            case 2:
+                addVB = 50;
+                vBucks += addVB;
+                break;
+            case 3:
+                addVB = 100;
+                vBucks += addVB;
+                break;
+            case 4:
+                addVB = 100;
+                vBucks += addVB;
+                break;
+            case 5:
+                addVB = 100;
+                vBucks += addVB;
+                break;
+            case 6:
+                addVB = 200;
+                vBucks += addVB;
+                break;
+            case 7:
+                addVB = 500;
+                vBucks += addVB;
+                break;
+            case 8:
+                addVB = 500;
+                vBucks += addVB;
+                break;
+            case 9:
+                addVB = 800;
+                vBucks += addVB;
+                break;
+            case 10:
+                addVB = -100;
+                vBucks += addVB;
+                break;
+            case 11:
+                addVB = -100;
+                vBucks += addVB;
+                break;
+            case 12:
+                addVB = -500;
+                vBucks += addVB;
+                break;
+            case 13:
+                addVB = -500;
+                vBucks += addVB;
+                break;
+            case 14:
+                addVB = -500;
+                vBucks += addVB;
+                break;
+            case 15:
+                addVB = -800;
+                vBucks += addVB;
+                break;    
+            default:
+                break;
         }
         
-        return vb.get(ranNum);
+        // Play sound when get or deduct from VBuck
+        if (addVB > 0)
+        {
+            playLevelUpSound();
+        }
+        else 
+        {
+            playLevelDownSound();
+        }
+        
+        // If shield ability is activated, not deduct money
+        if (shieldUsing == 1 && addVB < 0)
+        {
+            shieldUsing = 0;
+            vBucks += Math.abs(addVB);
+        } 
+        else if (shieldUsing == 1 && addVB > 0)
+        {
+            shieldUsing = 0;
+        }
+        
+        return vb.get(generateNum);
     }
 }
