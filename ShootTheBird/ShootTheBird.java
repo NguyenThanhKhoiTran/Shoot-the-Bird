@@ -385,7 +385,7 @@ public class ShootTheBird extends Application
                         case 1:
                             gp.getChildren().remove(iv.get(0));
                             gp.add(calcVBuck(iv2), 2, 0);
-                            showVBucks.setText(vBucks + "VBucks" + ranNum++);
+                            showVBucks.setText(vBucks + "VBucks");
                             break;
                         case 2:
                             gp.getChildren().remove(iv.get(1));
