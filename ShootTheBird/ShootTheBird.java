@@ -772,8 +772,4 @@ public class ShootTheBird extends Application {
 
         return vb.get(generateNum);
     }
-
-    public static void main(String[] args) {
-        ShootTheBird.main(args);
-    }
 }
