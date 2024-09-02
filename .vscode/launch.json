@@ -6,6 +6,20 @@
     "configurations": [
         {
             "type": "java",
+            "name": "PlayingGame",
+            "request": "launch",
+            "mainClass": "PlayingGame",
+            "projectName": "Shoot-the-Bird_8a9c4ab8"
+        },
+        {
+            "type": "java",
+            "name": "PlayingGame",
+            "request": "launch",
+            "mainClass": "PlayingGame",
+            "projectName": "Shoot-the-Bird-main_b970664"
+        },
+        {
+            "type": "java",
             "name": "Current File",
             "request": "launch",
             "mainClass": "${file}"
